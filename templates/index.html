@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anomaly Detection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+
+  <div class="w-full max-w-xl bg-white shadow-lg rounded-lg p-8">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">🚨 CCTV Anomaly Detection</h2>
+
+    <form id="uploadForm" class="flex flex-col space-y-4">
+      <input class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border file:rounded file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+             type="file" name="video" accept="video/*" required />
+      <button type="submit"
+              class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+        Upload & Detect
+      </button>
+    </form>
+
+    <div id="loading" class="mt-4 text-center text-gray-500 hidden">⏳ Processing video...</div>
+
+    <div id="videoContainer" class="mt-6 hidden">
+      <h3 class="text-lg font-semibold mb-2 text-center text-gray-700">🔍 Anomaly-Detected Output</h3>
+      <video id="outputVideo" width="100%" controls class="rounded border border-gray-300 shadow"></video>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('uploadForm').onsubmit = async function(event) {
+      event.preventDefault();
+      const loading = document.getElementById('loading');
+      const videoContainer = document.getElementById('videoContainer');
+      const video = document.getElementById('outputVideo');
+
+      loading.classList.remove('hidden');
+      videoContainer.classList.add('hidden');
+
+      const formData = new FormData(event.target);
+
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      loading.classList.add('hidden');
+
+      if (response.ok) {
+        const data = await response.json();
+        video.src = data.output_url + '?t=' + new Date().getTime(); // force reload
+        video.load();
+        videoContainer.classList.remove('hidden');
+      } else {
+        alert("Video upload or processing failed.");
+      }
+    };
+  </script>
+</body>
+</html>
